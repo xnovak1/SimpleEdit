@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimpleEdit
 {
-    public enum Edit
+    public enum Edits
     {
         Grayscale,
         InvertColors,
