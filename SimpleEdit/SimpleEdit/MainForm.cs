@@ -1,6 +1,4 @@
 using System.Drawing.Imaging;
-using System.IO;
-using System.Windows.Forms;
 
 namespace SimpleEdit
 {
@@ -8,6 +6,7 @@ namespace SimpleEdit
     {
         private List<Bitmap> originalImages;
         private List<Bitmap> images;
+        private List<string> imageNames;
         private int editing;
 
         public MainForm()
@@ -16,6 +15,7 @@ namespace SimpleEdit
             editing = 0;
             images = new List<Bitmap>();
             originalImages = new List<Bitmap>();
+            imageNames = new List<string>();
         }
 
         private void loadButton_Click(object sender, EventArgs e)
@@ -33,12 +33,20 @@ namespace SimpleEdit
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
+                    if (images.Count > 0)
+                    {
+                        images.Clear();
+                        originalImages.Clear();
+                        imageNames.Clear();
+                    }
+
                     pictureBox.Image = new Bitmap(openFileDialog.FileNames[0]);
                     foreach (string fileName in openFileDialog.FileNames)
                     {
                         var img = new Bitmap(fileName);
                         images.Add(img);
                         originalImages.Add(img);
+                        imageNames.Add(Path.GetFileNameWithoutExtension(fileName));
                     }
                 }
             }
@@ -51,30 +59,19 @@ namespace SimpleEdit
                 return;
             }
 
-            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
             {
-                saveFileDialog.Filter = ".jpg|*.jpg|.jpeg|*.jpeg|.png|*.png";
-                saveFileDialog.RestoreDirectory = true;
-                ImageFormat format = ImageFormat.Png;
-
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                if (folderDialog.ShowDialog() == DialogResult.OK)
                 {
-                    string extension = System.IO.Path.GetExtension(saveFileDialog.FileName);
-                    switch (extension)
-                    {
-                        case ".jpg":
-                            ;
-                            break;
-                        case ".jpeg":
-                            ;
-                            break;
-                        case ".png":
-                            ;
-                            break;
-                    }
+                    var folderName = folderDialog.SelectedPath;
 
-                    // pictureBox.Image.Save(saveFileDialog.FileName, format);
-                    images[0].Save(saveFileDialog.FileName, format);
+                    for (int i = 0; i < images.Count; i++)
+                    {
+                        var image = images[i];
+                        var fileName = imageNames[i] + "_edited" + ".png";
+                        var filePath = Path.Combine(folderName, fileName);
+                        image.Save(filePath, ImageFormat.Png);
+                    }
                 }
             }
         }
@@ -116,10 +113,6 @@ namespace SimpleEdit
                     {
                         images[temp] = await ImageProcessor.Blur(image, 9);
                     }
-                    else if (nukeButton.Checked)
-                    {
-                        images[temp] = ImageProcessor.Nuke(image);
-                    }
                     else
                     {
                         throw new Exception("Non-existing edit choice.");
@@ -142,6 +135,11 @@ namespace SimpleEdit
             }
 
             pictureBox.Image = originalImages[0];
+
+            for (int i = 0; i < images.Count; i++)
+            {
+                images[i] = originalImages[i];
+            }
         }
     }
 }

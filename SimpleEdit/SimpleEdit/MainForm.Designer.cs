@@ -34,7 +34,6 @@ namespace SimpleEdit
             this.loadButton = new System.Windows.Forms.ToolStripMenuItem();
             this.saveButton = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsBox = new System.Windows.Forms.GroupBox();
-            this.nukeButton = new System.Windows.Forms.RadioButton();
             this.bigBlurButton = new System.Windows.Forms.RadioButton();
             this.smallBlurButton = new System.Windows.Forms.RadioButton();
             this.flipImageButton = new System.Windows.Forms.RadioButton();
@@ -77,7 +76,6 @@ namespace SimpleEdit
             // 
             // optionsBox
             // 
-            this.optionsBox.Controls.Add(this.nukeButton);
             this.optionsBox.Controls.Add(this.bigBlurButton);
             this.optionsBox.Controls.Add(this.smallBlurButton);
             this.optionsBox.Controls.Add(this.flipImageButton);
@@ -89,17 +87,6 @@ namespace SimpleEdit
             this.optionsBox.TabIndex = 1;
             this.optionsBox.TabStop = false;
             this.optionsBox.Text = "Choose an edit:";
-            // 
-            // nukeButton
-            // 
-            this.nukeButton.AutoSize = true;
-            this.nukeButton.Location = new System.Drawing.Point(6, 196);
-            this.nukeButton.Name = "nukeButton";
-            this.nukeButton.Size = new System.Drawing.Size(64, 24);
-            this.nukeButton.TabIndex = 5;
-            this.nukeButton.TabStop = true;
-            this.nukeButton.Text = "Nuke";
-            this.nukeButton.UseVisualStyleBackColor = true;
             // 
             // bigBlurButton
             // 
@@ -222,7 +209,6 @@ namespace SimpleEdit
         private RadioButton bigBlurButton;
         private PictureBox pictureBox;
         private Button confirmButton;
-        private RadioButton nukeButton;
         private Button undoButton;
     }
 }

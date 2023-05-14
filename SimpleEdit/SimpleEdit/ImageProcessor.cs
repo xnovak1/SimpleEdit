@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
+﻿using System.Drawing.Imaging;
 
 namespace SimpleEdit
 {
@@ -66,7 +59,7 @@ namespace SimpleEdit
 
                 BitmapData blurredData = result.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadWrite, result.PixelFormat);
 
-                int bitsPerPixel = System.Drawing.Image.GetPixelFormatSize(result.PixelFormat);
+                int bitsPerPixel = Image.GetPixelFormatSize(result.PixelFormat);
 
                 byte* scan0 = (byte*)blurredData.Scan0.ToPointer();
 
@@ -113,12 +106,6 @@ namespace SimpleEdit
 
                 return result;
             });
-        }
-
-        public static Bitmap Nuke(Bitmap bitmap)
-        {
-            var result = new Bitmap(bitmap.Width, bitmap.Height);
-            return result;
         }
     }
 }
