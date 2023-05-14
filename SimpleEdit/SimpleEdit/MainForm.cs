@@ -1,36 +1,56 @@
 using System.Drawing.Imaging;
 using System.IO;
+using System.Windows.Forms;
 
 namespace SimpleEdit
 {
     public partial class MainForm : Form
     {
-        private Bitmap originalImage;
-        private String imageName;
+        private List<Bitmap> originalImages;
+        private List<Bitmap> images;
+        private int editing;
 
         public MainForm()
         {
             InitializeComponent();
+            editing = 0;
+            images = new List<Bitmap>();
+            originalImages = new List<Bitmap>();
         }
 
         private void loadButton_Click(object sender, EventArgs e)
         {
+            if (editing != 0)
+            {
+                return;
+            }
+
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Filter = "Image Files (*.jpg;*.jpeg,*.png)|*.jpg;*.jpeg;*.png";
                 openFileDialog.RestoreDirectory = true;
+                openFileDialog.Multiselect = true;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    originalImage = new Bitmap(openFileDialog.FileName);
-                    pictureBox.Image = new Bitmap(openFileDialog.FileName);
-                    ImageProcessor.Grayscale((Bitmap)pictureBox.Image);
+                    pictureBox.Image = new Bitmap(openFileDialog.FileNames[0]);
+                    foreach (string fileName in openFileDialog.FileNames)
+                    {
+                        var img = new Bitmap(fileName);
+                        images.Add(img);
+                        originalImages.Add(img);
+                    }
                 }
             }
         }
         
         private void saveButton_Click(object sender, EventArgs e)
         {
+            if (pictureBox.Image == null || editing != 0)
+            {
+                return;
+            }
+
             using (SaveFileDialog saveFileDialog = new SaveFileDialog())
             {
                 saveFileDialog.Filter = ".jpg|*.jpg|.jpeg|*.jpeg|.png|*.png";
@@ -53,50 +73,75 @@ namespace SimpleEdit
                             break;
                     }
 
-                    pictureBox.Image.Save(saveFileDialog.FileName, format);
+                    // pictureBox.Image.Save(saveFileDialog.FileName, format);
+                    images[0].Save(saveFileDialog.FileName, format);
                 }
             }
         }
 
-        private void confirmButton_Click(object sender, EventArgs e)
+        private async void confirmButton_Click(object sender, EventArgs e)
         {
-            if (pictureBox.Image == null)
+            if (pictureBox.Image == null || editing != 0 || images.Count == 0)
             {
                 return;
             }
 
-            if (grayscaleButton.Checked)
+            Interlocked.Exchange(ref editing, 1);
+            Cursor = Cursors.WaitCursor;
+            var tasks = new List<Task>();
+
+            for (int i = 0; i < images.Count; i++)
             {
-                pictureBox.Image = ImageProcessor.Grayscale((Bitmap)pictureBox.Image);
-            } else if (invertColorsButton.Checked)
-            {
-                pictureBox.Image = ImageProcessor.InvertColors((Bitmap)pictureBox.Image);
-            } else if (flipImageButton.Checked)
-            {
-                pictureBox.Image = ImageProcessor.FlipImage((Bitmap)pictureBox.Image);
-            } else if (smallBlurButton.Checked)
-            {
-                pictureBox.Image = ImageProcessor.Blur((Bitmap)pictureBox.Image, 3);
-            } else if (bigBlurButton.Checked)
-            {
-                pictureBox.Image = ImageProcessor.Blur((Bitmap)pictureBox.Image, 10);
-            } else if (nukeButton.Checked)
-            {
-                pictureBox.Image = ImageProcessor.Nuke((Bitmap)pictureBox.Image);
-            } else
-            {
-                throw new Exception("Non-existing edit choice.");
+                int temp = i;
+                var image = images[temp];
+                tasks.Add(Task.Run(async () =>
+                {
+                    if (grayscaleButton.Checked)
+                    {
+                        images[temp] = await ImageProcessor.Grayscale(image);
+                    }
+                    else if (invertColorsButton.Checked)
+                    {
+                        images[temp] = await ImageProcessor.InvertColors(image);
+                    }
+                    else if (flipImageButton.Checked)
+                    {
+                        images[temp] = ImageProcessor.FlipImage(image);
+                    }
+                    else if (smallBlurButton.Checked)
+                    {
+                        images[temp] = await ImageProcessor.Blur(image, 2);
+                    }
+                    else if (bigBlurButton.Checked)
+                    {
+                        images[temp] = await ImageProcessor.Blur(image, 9);
+                    }
+                    else if (nukeButton.Checked)
+                    {
+                        images[temp] = ImageProcessor.Nuke(image);
+                    }
+                    else
+                    {
+                        throw new Exception("Non-existing edit choice.");
+                    }
+                }));
             }
+
+            await Task.WhenAll(tasks);
+
+            pictureBox.Image = images[0];
+            Cursor = Cursors.Arrow;
+            Interlocked.Exchange(ref editing, 0);
         }
 
         private void undoButton_Click(object sender, EventArgs e)
         {
-            if (pictureBox.Image == null)
+            if (pictureBox.Image == null || editing != 0)
             {
                 return;
             }
 
-            pictureBox.Image = originalImage;
+            pictureBox.Image = originalImages[0];
         }
     }
 }
