@@ -51,7 +51,7 @@ namespace SimpleEdit
                 }
             }
         }
-        
+
         private void saveButton_Click(object sender, EventArgs e)
         {
             if (pictureBox.Image == null || editing != 0)

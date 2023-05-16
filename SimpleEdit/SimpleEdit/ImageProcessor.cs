@@ -27,7 +27,8 @@ namespace SimpleEdit
 
         public static Task<Bitmap> InvertColors(Bitmap bitmap)
         {
-            return Task.Run(() => {
+            return Task.Run(() =>
+            {
                 var result = new Bitmap(bitmap.Width, bitmap.Height);
                 for (int i = 0; i < bitmap.Width; i++)
                 {
@@ -50,6 +51,7 @@ namespace SimpleEdit
         }
 
         // source: https://stackoverflow.com/questions/44827093/how-to-apply-blur-effect-on-a-bitmap-image-in-c
+        // naive implementation is too slow
         public static unsafe Task<Bitmap> Blur(Bitmap bitmap, int blurSize)
         {
             return Task.Run(() =>
