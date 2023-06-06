@@ -1,2 +1,4 @@
 # SimpleEdit
-School project for C# class.
+Minimalistic photo editing app made using WindowsForms.
+
+Works only on Windows!
